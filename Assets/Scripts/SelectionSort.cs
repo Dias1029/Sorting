@@ -15,7 +15,7 @@ public class SelectionSort : MonoBehaviour
 
     private Element[] array = new Element[10];
 
-    private float startPosX = 7.8f;
+    private float startPosX = -7.8f;
     private const float posY = 2.5f;
     private float scale = 3.0f;
     private const float offsetScale = 1.0f;
@@ -34,7 +34,7 @@ public class SelectionSort : MonoBehaviour
 
         buttonShuffle.onClick.AddListener(ShuffleArray);
         buttonSort.onClick.AddListener(SortArray);
-        buttonRandom.onClick.AddListener(RandomArray);
+        buttonRandom.onClick.AddListener(InitRandomArray);
     }
 
     private void OnDisable()
@@ -157,7 +157,7 @@ public class SelectionSort : MonoBehaviour
             {
                 clickTwoElements = false;
 
-                if (firstClickElementID == elementID)
+                if (firstClickElementID != elementID)
                 {
                     array[firstClickElementID].MoveTo(array[elementID].transform.localPosition);
                     array[elementID].MoveTo(array[firstClickElementID].transform.localPosition);
@@ -198,10 +198,58 @@ public class SelectionSort : MonoBehaviour
         buttonShuffle.interactable = false;
         buttonSort.interactable = false;
 
-        for (int i = 0; i < array.Length; i++)
+        for (int i = 0; i < array.Length - 1; i++)
         {
-            array[i].SetColor(Color.green);
-            yield return new WaitForSeconds(1);
+            int min_idx = i;
+
+            array[i].SetColor(Color.red);
+
+            for (int j = i + 1; j < array.Length; j++)
+            {
+                array[j].SetColor(Color.green);
+                yield return new WaitForSeconds(1);
+                array[j].InitColor = array[j].InitColor;
+                if (array[j].transform.localScale.x < array[min_idx].transform.localScale.x)
+                {
+                    array[j].SetColor(Color.blue);
+                    if (min_idx != i) array[min_idx].InitColor = array[min_idx].InitColor;
+                    min_idx = j;
+                }
+            }
+
+            if (min_idx != i)
+            {
+                array[min_idx].MoveTo(array[i].transform.localPosition);
+                array[i].MoveTo(array[min_idx].transform.localPosition);
+
+                while (numElementsMoving != 0)
+                {
+                    yield return null;
+                }
+
+                array[i].InitColor = array[i].InitColor;
+                SwapElementsArray(ref array[min_idx], ref array[i]);
+                ShowArray();
+            }
+
+            else
+            {
+                array[i].SetColor(Color.blue);
+            }
         }
+
+        array[array.Length - 1].SetColor(Color.blue);
+
+        for (int j = 0; j < array.Length; j++)
+        {
+            array[j].InitColor = array[j].InitColor;
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        buttonRandom.interactable = true;
+        buttonShuffle.interactable = true;
+        buttonSort.interactable = true;
+
+        timerSorting = false;
     }
 }
